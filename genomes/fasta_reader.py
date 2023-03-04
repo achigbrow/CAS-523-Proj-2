@@ -40,10 +40,10 @@ def read_wuhan_1(filepath):
     :param filepath:
     :return: hu1_full_genome, utr5, hu1_gene
     """
-    hu1_full_genome = get_genome_string(filepath)
+    hu1_full_genome = get_genome_string(filepath).upper()
 
-    utr5 = seperate_genome(hu1_full_genome, 0, 264)
-    hu1_gene = seperate_genome(hu1_full_genome, 265, 21554)
+    utr5 = seperate_genome(hu1_full_genome, 0, 264).upper()
+    hu1_gene = seperate_genome(hu1_full_genome, 265, 21554).upper()
 
     return hu1_full_genome, utr5, hu1_gene
 
