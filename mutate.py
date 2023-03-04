@@ -1,6 +1,8 @@
 import uuid
 
 import pandas as pd
+import time
+
 from tabulate import tabulate
 from genomes import fasta_reader
 
@@ -47,9 +49,9 @@ def mutation(genome, generation, id, skip):
                         mut = genome[: len(genome)] + nuc
                     else:
                         mut = genome[:i] + nuc + genome[i + 1 :]
-                    if mut in df["genome"].unique():
-                        print("duplicate", mut)
-                        continue
+                    # if mut in df["genome"].unique():
+                    #     print("duplicate", mut)
+                    #     continue
                     # id for this genome, the genome, the generation of the
                     # genome, and its parent's id
                     temp = [uuid.uuid1().int, mut, generation + 1, id, mut_skip]
@@ -93,7 +95,11 @@ if __name__ == "__main__":
 
     orig_id = uuid.uuid1().int
 
+    print("starting mutation")
+    start_time = time.time()
     gen1 = mutation(hu1_gene, 0, orig_id, [])
 
+    print("--- %s seconds ---" % (time.time() - start_time))
     print(gen1.shape)
-    print("done")
+    gen1.to_csv("gen1.csv", index=False)
+    print("done mutating")
