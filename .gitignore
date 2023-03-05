@@ -1,4 +1,6 @@
 .idea/
+# saved csvs are larger than 100 mb so can't add to git anyway
+*.csv
 
 # Default python stuff below here
 # Byte-compiled / optimized / DLL files

@@ -12,7 +12,7 @@ def get_genome_string(filepath):
     all = file.readlines()
     print(all[0])
     genome = all[1:]
-    return ''.join(genome)
+    return "".join(genome)
 
 
 def seperate_genome(genome, start, end):
