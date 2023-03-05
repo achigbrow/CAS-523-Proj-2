@@ -12,7 +12,7 @@ def get_mutated_phenotypes(original_genome, mutations):
     :return: dataframe that contains extra colums indicating whether the phenotype has
         changed and which protein was changed (indexed from 0, starting at the beginning
         of the original genome)
-        Columns: "id", "genome", "generation", "parent", "mut_pheno", "protein_index"
+        Columns: "id", "genome", "generation", "parent", "mutated_pheno", "protein_index"
     """
 
     raise NotImplementedError
