@@ -2,11 +2,13 @@ import sys
 import uuid
 
 import pandas as pd
+from Bio.Seq import Seq
 
 from tabulate import tabulate
+from utils import get_mutated_phenotype
 
 
-def mutation(genome, generation, id, pos):
+def mutation(original_phenotype, genome, generation, id, pos):
     """
     Takes a string genome and returns a dataframe containing its mutations.
     generation=0 will build a dataframe containing generation 1 with 1
@@ -27,7 +29,7 @@ def mutation(genome, generation, id, pos):
     :return: dataframe with cols: id, genome, generation, parent (id), mut_pos
     """
 
-    df = pd.DataFrame(columns=["id", "genome", "generation", "parent", "mut_pos"])
+    df = pd.DataFrame(columns=["id", "genome", "generation", "parent", "mut_pos", "mutated_protein_index"])
     nucleotides = ["A", "C", "G", "T"]
     df_loc = 0
 
@@ -55,24 +57,28 @@ def mutation(genome, generation, id, pos):
                         mut = genome[:i] + nuc + genome[i + 1 :]
                     # id for this genome, the genome, the generation of the
                     # genome, and its parent's id
-                    temp = [uuid.uuid1().int, mut, generation + 1, id, mut_pos]
+                    temp = [uuid.uuid1().int, mut, generation + 1, id, mut_pos, None]
+                    temp = get_mutated_phenotype(original_phenotype, temp)
                     df.loc[df_loc] = temp
                     df_loc += 1
     return df
 
 
 def test_mutation():
-    orig = "AAATGAC"
+    orig = "AAAAAAAAA"  # Phenotype: MKA
     orig_id = uuid.uuid1().int
 
-    gen1 = mutation(orig, 0, orig_id, [])
+    original_phenotype = Seq(orig).translate()
+    print(f"\n\noriginal_phenotype: {original_phenotype}")
+
+    gen1 = mutation(original_phenotype, orig, 0, orig_id, [])
     print(tabulate(gen1, headers="keys", tablefmt="psql"))
     print(gen1.shape)
 
     gen2_list = []
 
     for row in gen1.itertuples(index=False):
-        gen2_list.append(mutation(row[1], row[2], row[0], row[4]))
+        gen2_list.append(mutation(original_phenotype, row[1], row[2], row[0], row[4]))
 
     gen2 = pd.concat(gen2_list)
     gen2 = gen2.drop_duplicates(subset=["genome"])
@@ -82,7 +88,7 @@ def test_mutation():
     gen3_list = []
 
     for row in gen2.itertuples(index=False):
-        gen3_list.append(mutation(row[1], row[2], row[0], row[4]))
+        gen3_list.append(mutation(original_phenotype, row[1], row[2], row[0], row[4]))
 
     gen3 = pd.concat(gen3_list)
     gen3 = gen3.drop_duplicates(subset=["genome"])

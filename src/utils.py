@@ -1,18 +1,28 @@
 """
 Utility functions
 """
+from Bio.Seq import Seq
 
 
-def get_mutated_phenotypes(original_genome, mutations):
+def get_mutated_phenotype(original_phenotype, values):
     """
-    :param original_genome: string, the original genome sqeuence of A, C, T, and Gs
-    :param mutations: a dataframe of mutations to the original genome.
-        Expects columns: "id", "genome", "generation", "parent"
+    :param original_phenotype: string, the original phenotype of the genome sqeuence of A, C, T, and Gs
+    :param values: a list with the following values, in order:
+        Expects columns: "id", "genome", "generation", "parent", "mut_pos", "mutated_protein_index"
+        These are columns in the final genome mutation dataframe.
 
-    :return: dataframe that contains extra colums indicating whether the phenotype has
-        changed and which protein was changed (indexed from 0, starting at the beginning
-        of the original genome)
-        Columns: "id", "genome", "generation", "parent", "mutated_pheno", "protein_index"
+    :return: a list that contains an updated "mutated_protein_index" column.
     """
 
-    raise NotImplementedError
+    genome = Seq(values[1])
+    phenotype = genome.translate()
+    # print(f"genome: {genome} phenotype: {phenotype}")
+    if phenotype == original_phenotype:
+        values[5] = [-1]
+        return values
+
+    diff = [i for i in range(len(original_phenotype)) if original_phenotype[i] != phenotype[i]]
+
+    values[5] = diff
+
+    return values
