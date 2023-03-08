@@ -15,25 +15,6 @@ def get_genome_string(filepath):
     return "".join(genome)
 
 
-def seperate_genome(genome, start, end):
-    """
-    This function allows you to seperate out specific parts of the genome for
-    analysis.
-    Make sure that your start/end account for the fact that the string is
-    indexed from 0
-    :param genome: a string of the genome
-    :param start: the first nucleotide of the section of the genome you want to
-    analyze
-    (will be included in the result)
-    :param end: the last nucleotide in the section of the genome that you
-    want to analyze (will be included in the result)
-    :return: a string containing a fraction of the genome
-    """
-    # TODO: figure out if I need to do anything else or if it dumb to have a
-    #  one line function omg
-    return genome[start : end + 1]
-
-
 def read_wuhan_1(filepath):
     """
     returns the wuhan-hu-1 genome broken into three parts
@@ -42,10 +23,12 @@ def read_wuhan_1(filepath):
     """
     hu1_full_genome = get_genome_string(filepath).upper()
 
-    utr5 = seperate_genome(hu1_full_genome, 0, 264).upper()
-    hu1_gene = seperate_genome(hu1_full_genome, 265, 21554).upper()
+    # spike protein gene is 21563..25384
+    # RBD may be 22517-23185 start point is 1 less b/c of 0 index, end is same
+    # b/c it is not included
+    hu1_rbd = hu1_full_genome[22516:23185]
 
-    return hu1_full_genome, utr5, hu1_gene
+    return hu1_full_genome, hu1_rbd
 
 
 def build_parser():
@@ -54,7 +37,7 @@ def build_parser():
         "-filepath",
         type=str,
         required=False,
-        default=r"D:\CS523\CAS-523-Proj-2\original\wuhan-hu-1.txt",
+        default=r"D:\CS523\CAS-523-Proj-2\genomes\wuhan-hu-1.txt",
         help="fully qualified filepath to the fasta file you are reading",
     )
     parser.add_argument(
@@ -71,9 +54,8 @@ if __name__ == "__main__":
     options, _ = parser.parse_known_args()
 
     if options.opt == 0:
-        hu1_full_genome, utr5, hu1_gene = read_wuhan_1(options.filepath)
+        hu1_full_genome, hu1_rbd = read_wuhan_1(options.filepath)
         # test confirmed that reading the wuhan-hu-1 file returns the
         # appropriate length strings
         print(len(hu1_full_genome))
-        print(len(utr5))
-        print(len(hu1_gene))
+        print(len(hu1_rbd))
