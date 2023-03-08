@@ -12,6 +12,11 @@ print('# of permutations after genome is mutated once')
 print('full=',perms(29903,1))
 print('spike=',perms(3138,1))
 
+# A-1-3 
+print('# of permutations after genome is mutated thrice')
+print('full=',perms(29903,3))
+print('spike=',perms(3138,3))
+
 # A-1-2
 
 print('# of permutations with different amino acid after genome is mutated once')
@@ -48,14 +53,14 @@ hist = [0] * 21
 for k,v in amino_acids.items():
   idx = S.find(k)
   print(idx)
-  hist[idx] = hist[idx]+1
+  hist[idx] = hist[idx]+1 
     
 print(hist)
 
 for i in range(1,21):
   hist[i] = hist[i]/sum(hist)
 
-
+print('probability of amino acid occurring')
 print(hist)
 
 L = 3138/3
@@ -63,15 +68,6 @@ L = 3138/3
 #M = pow(20,L) 
 
 
-# amino acid table's probabilities ...
-2/64 # Phe
-2/64 # 
-...
-4/64 # 
 
 
 
-# A-1-3
-print('# of permutations after genome is mutated thrice')
-print('full=',perms(29903,3))
-print('spike=',perms(3138,3))
