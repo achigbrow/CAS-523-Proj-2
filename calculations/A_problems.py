@@ -3,7 +3,7 @@
 import math
 
 # permutation = combinations * 3^k
-def perms(n,k):
+def choose(n,k):
   comb = math.factorial(n)/(math.factorial(k)*math.factorial(n-k))
   return comb * pow(3,k)
 
