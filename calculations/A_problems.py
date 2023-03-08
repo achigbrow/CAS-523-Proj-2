@@ -9,13 +9,13 @@ def choose(n,k):
 
 # A-1-1
 print('# of permutations after genome is mutated once')
-print('full=',perms(29903,1))
-print('spike=',perms(3138,1))
+print('full=',choose(29903,1))
+print('spike=',choose(3138,1))
 
 # A-1-3 
 print('# of permutations after genome is mutated thrice')
-print('full=',perms(29903,3))
-print('spike=',perms(3138,3))
+print('full=',choose(29903,3))
+print('spike=',choose(3138,3))
 
 # A-1-2
 
