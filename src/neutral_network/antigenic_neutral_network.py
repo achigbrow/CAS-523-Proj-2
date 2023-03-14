@@ -39,7 +39,7 @@ class AntigenicNeutralNetwork:
             # Randomly choose a node that is neutral
             index = random.sample(list(self.nn.nodes()), 1)[0]
             rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
-            print(f"rand node id: {rand_node.id}")
+            print(f"Mutating node {rand_node.id} to make new node {current_size}")
             while not rand_node.is_neutral:
                 rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
 
@@ -51,7 +51,6 @@ class AntigenicNeutralNetwork:
             self.nn.add_node(child.id, pos=(child.id % 3, child.id))
             self.nn.add_edge(rand_node.id, child.id)
 
-            print(f"made node {current_size}")
             current_size += 1
 
     def create_figure(self):

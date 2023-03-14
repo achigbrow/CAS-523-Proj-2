@@ -6,8 +6,8 @@ from antigenic_neutral_network import AntigenicNeutralNetwork
 
 def main():
     # Neutral network params
-    tolerance = 0.9
-    size = 7
+    tolerance = 0.7
+    size = 123
 
     # Init the antigenically neutral network
     ann = AntigenicNeutralNetwork(size=size, tolerance=tolerance)
