@@ -2,7 +2,7 @@
 Python code for building an antigenic neutral network
 """
 import random
-
+from math import cos, sin, pi, dist
 import networkx as nx
 from bindingcalculator import *
 import plotly.graph_objects as go
@@ -13,7 +13,9 @@ class AntigenicNeutralNetwork:
     def __init__(self, size, tolerance):
         self.size = size
         self.tolerance = tolerance
+        print("Initializing binding calculator...", end="")
         self.bd = BindingCalculator()
+        print("Done")
         self.sites = list(self.bd.sites)  # Used to track the sites we can mutate
 
         self.nodes = {}  # Holds the node data
@@ -30,10 +32,11 @@ class AntigenicNeutralNetwork:
         """
 
         # Create the root node of the neutral network where there are no mutations
-        node = Node(node_id=0, bd=self.bd, tolerance=self.tolerance, mutations=[])
+        node = Node(node_id=0, xy_pos=(0, 0, 0), bd=self.bd, tolerance=self.tolerance, mutations=[])
         self.nodes[0] = node
-        self.nn.add_node(node.id, pos=(0, 0))
+        self.nn.add_node(node.id, pos=(node.xy_pos[0], node.xy_pos[1]))
         current_size = 1
+        neutral_nodes = 1
         while current_size < self.size:
 
             # Randomly choose a node that is neutral
@@ -45,13 +48,17 @@ class AntigenicNeutralNetwork:
 
             # Create a child node
             child = rand_node.mutate(child_node_id=current_size, bd=self.bd, sites=self.sites)
+            if child.is_neutral:
+                neutral_nodes += 1
             self.nodes[current_size] = child
 
             # Add the child to the network
-            self.nn.add_node(child.id, pos=(child.id % 3, child.id))
+            self.nn.add_node(child.id, pos=(child.xy_pos[0], child.xy_pos[1]))
             self.nn.add_edge(rand_node.id, child.id)
 
             current_size += 1
+
+        print(f"Number of neutral nodes: {neutral_nodes}\nTotal nodes: {self.size}")
 
     def create_figure(self):
         """
@@ -59,7 +66,7 @@ class AntigenicNeutralNetwork:
         :return:
         """
         G = self.nn
-        #G = nx.random_geometric_graph(200, 0.125)
+        # G = nx.random_geometric_graph(200, 0.125)
         edge_x = []
         edge_y = []
         for edge in G.edges():
@@ -99,6 +106,8 @@ class AntigenicNeutralNetwork:
                 reversescale=True,
                 color=['#ff0000'],
                 size=10,
+                cmin=0,
+                cmax=1,
                 colorbar=dict(
                     thickness=15,
                     title='Node Connections',
@@ -107,13 +116,14 @@ class AntigenicNeutralNetwork:
                 ),
                 line_width=2))
 
-        node_adjacencies = []
+        node_neutral = []
         node_text = []
         for node, adjacencies in enumerate(G.adjacency()):
-            node_adjacencies.append(len(adjacencies[1]))
-            node_text.append('# of connections: ' + str(len(adjacencies[1])))
+            val = 1 if self.nodes[node].is_neutral else 0
+            node_neutral.append(val)
+            node_text.append(f'neutral: {self.nodes[node].is_neutral}')
 
-        node_trace.marker.color = node_adjacencies
+        node_trace.marker.color = node_neutral
         node_trace.text = node_text
 
         fig = go.Figure(data=[edge_trace, node_trace],
@@ -139,8 +149,9 @@ class Node:
     A node in the neutral network
     """
 
-    def __init__(self, node_id, bd, tolerance, mutations):
+    def __init__(self, node_id, xy_pos, bd, tolerance, mutations):
         """
+        :param: xy_pos: tuple(xy coords of parent, rotation)
         :param mutations: a list of mutations performed on the mode.
             Sites must be between 331 and 531.
         """
@@ -150,6 +161,24 @@ class Node:
         self.tolerance = tolerance
         self.escape = self.get_escape_remaining(bd)
         self.is_neutral = True if self.escape > tolerance else False
+
+        # Set the xy position of the node depending on whether it is neutral
+        if len(mutations):
+            neutral_radius = 25
+            mut_radius = 5
+
+            if self.is_neutral:
+                radius = neutral_radius
+            else:
+                radius = mut_radius
+
+            x, y, z = xy_pos
+            dx = radius * cos(pi * xy_pos[2])
+            dy = radius * sin(pi * xy_pos[2])
+            self.xy_pos = (x + dx, y + dy, z)
+
+        else:
+            self.xy_pos = xy_pos
 
     def get_escape_remaining(self, bd):
         """
@@ -172,7 +201,13 @@ class Node:
         mutations.append(site)
         self.child_mutations.append(site)
 
-        child_node = Node(bd=bd, node_id=child_node_id, tolerance=self.tolerance, mutations=mutations)
+        # Set the position for the child node
+        rotation_inc = 0.1
+        x, y, z = self.xy_pos
+        z += rotation_inc
+        self.xy_pos = (x, y, z)
+        child_node = Node(bd=bd, xy_pos=self.xy_pos, node_id=child_node_id, tolerance=self.tolerance,
+                          mutations=mutations)
 
         return child_node
 
