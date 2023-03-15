@@ -72,7 +72,7 @@ syn = N2*aminos_to_basepairs
 non = N2*(1-aminos_to_basepairs)
 
 print('QA5 How many of N2 are synonymous and non-synonymous (statistical estimate)?')
-print('syn,' are synonymous ( ',aminos_to_basepairs*100,' percent )',non,' are non-synonymous ( ',(1-aminos_to_basepairs)*100,' percent')
+print(syn,' are synonymous ( ',aminos_to_basepairs*100,' percent )',non,' are non-synonymous ( ',(1-aminos_to_basepairs)*100,' percent')
 
 print('QA6 How fast do synonymous and non-synonymous mutations accumulate in an n-step neutral network?')
 total = 0
