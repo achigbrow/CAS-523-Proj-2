@@ -1,0 +1,269 @@
+# A_problems.py
+ 
+import math
+
+
+
+
+"""
+  
+  
+  
+  
+
+
+
+# A-1-1
+print('# of permutations after genome is mutated once')
+print('full=',combinations(29903,1))
+print('spike=',combinations(3138,1))
+
+# A-1-2
+
+print('# of permutations with different amino acid after genome is mutated once')
+
+# triplet -> amino acid
+UUU	F		UCU	S		UAU	Y		UGU	C
+UUC	F		UCC	S		UAC	Y		UGC	C
+UUA	L		UCA	S		UAA	$		UGA	$
+UUG	L		UCG	S		UAG	$		UGG	W
+CUU	L		CCU	P		CAU	H		CGU	R
+CUC	L		CCC	P		CAC	H		CGC	R
+CUA	L		CCA	P		CAA	Q		CGA	R
+CUG	L		CCG	P		CAG	Q		CGG	R
+AUU	I		ACU	T		AAU	N		AGU	S
+AUC	I		ACC	T		AAC	N		AGC	S
+AUA	I		ACA	T		AAA	K		AGA	R
+AUG	M		ACG	T		AAG	K		AGG	R
+GUU	V		GCU	A		GAU	D		GGU	G
+GUC	V		GCC	A		GAC	D		GGC	G
+GUA	V		GCA	A		GAA	E		GGA	G
+GUG	V		GCG	A		GAG	E		GGG	G
+
+
+amino_acids = {
+"UUU" : "F", "UCU" : "S", "UAU" : "Y", "UGU" : "C", "UUC" : "F", "UCC" : "S", "UAC" : "Y", "UGC" : "C", "UUA" : "L", "UCA" : "S", "UAA" : "$", "UGA" : "$", "UUG" : "L", "UCG" : "S", "UAG" : "$", "UGG" : "W", "CUU" : "L", "CCU" : "P", "CAU" : "H", "CGU" : "R", "CUC" : "L", "CCC" : "P", "CAC" : "H", "CGC" : "R", "CUA" : "L", "CCA" : "P", "CAA" : "Q", "CGA" : "R", "CUG" : "L", "CCG" : "P", "CAG" : "Q", "CGG" : "R", "AUU" : "I", "ACU" : "T", "AAU" : "N", "AGU" : "S", "AUC" : "I", "ACC" : "T", "AAC" : "N", "AGC" : "S", "AUA" : "I", "ACA" : "T", "AAA" : "K", "AGA" : "R", "AUG" : "M", "ACG" : "T", "AAG" : "K", "AGG" : "R", "GUU" : "V", "GCU" : "A", "GAU" : "D", "GGU" : "G", "GUC" : "V", "GCC" : "A", "GAC" : "D", "GGC" : "G", "GUA" : "V", "GCA" : "A", "GAA" : "E", "GGA" : "G", "GUG" : "V", "GCG" : "A", "GAG" : "E", "GGG" : "G"
+}
+  
+S = 'ACDEFGHIKLMNPQRSTVWY$' # $ is stop
+
+hist = [0] * 21
+
+for k,v in amino_acids.items():
+  
+  idx = S.find(v)
+  print(k,v,idx)  
+  hist[idx] = hist[idx]+1
+    
+print(hist)
+print('sum of hist=',sum(hist))
+P_amino = [0] * 21
+for i in range(len(hist)):
+  P_amino[i] = hist[i]/sum(hist)
+
+for i in range(1,len(hist)):
+  print(S[i],'=',P_amino[i])
+  
+  
+  
+L = 3138/3 # number of amino acids
+
+#print('If the target base (T, A, G or C) mutation is unspecified and can be any of the four bases the total combination becomes 64 codons × 3 codon positions × 3 bases = 576 possible permutations, excluding mutations to self.')
+
+#print('The combined total probability...')
+
+
+#print('If the substituted base are specified, the following method is used to calculate the total permutations of SNS in the genetic code. The total number of possible that can occur in the 64 codons is 144 (i.e. 3 codon positions × 64 codons = 192, and subsequently excluding 3 codon positions × 16 permutations for each pair of unmutated bases= 48, thus resulting in 144). The 16 permutations are excluded given mutations to self are not considered substitutions.')
+
+
+
+
+
+
+
+#M = pow(20,L) 
+
+
+# amino acid table's probabilities ...
+2/64 # Phe
+2/64 # 
+...
+4/64 # 
+
+"""
+
+
+
+
+
+def nchoosek(n,k):
+  return math.factorial(n) // math.factorial(k) // math.factorial(n - k)
+  
+n = 600 # 30000 29903
+set = 'spike genome'
+
+aminos_to_basepairs = 20/64 
+
+print('Part 1 - Calculations')
+
+#################
+
+print('There are ',n,
+
+"""
+for k in range(0,4):
+
+  combos = nchoosek(n,k)
+  bp = combos*math.pow(3,k)
+
+# nchoosek(n,k) becomes unitless 
+
+  print(n,' basepairs per genome, ',k,' mutations, ',combos,' genome combinations without repetitions (reversions), ',bp,' basepair combinations\n')
+  """
+  
+#QA1 How many basepair combinations after 1 mutation?
+
+print('
+k = 1
+print('k=',k)
+
+combos = nchoosek(n,k)
+N = combos*math.pow(3,k)
+
+# nchoosek(n,k) is unitless 
+
+print(n,' basepairs, ',k,' mutations, ',combos,' genome combinations without repetitions (reversions), ',N,' basepair combinations\n')
+
+#QA2 How many are synonymous and how many are non-synonymous?
+
+
+print('QA-2')
+num_aa = 20
+num_bp = 64 # total possible AGCT permutations
+
+print('20/64 or ',(aminos_to_basepairs),' is the ratio of possible amino acids ',num_aa,' to the ratio of total basepair permutations  ',num_bp,' (4^3)')
+
+
+syn = N*aminos_to_basepairs
+non = N*(1-aminos_to_basepairs)
+
+print('Out of ',N,' basepair combinations, ',syn,' are synonymous ( ',aminos_to_basepairs*100,' percent )',non,' are non-synonymous ( ',(1-aminos_to_basepairs)*100,' percent')
+ 
+  
+  
+#QA3 How many genomes are in a 3-step neutral network?
+
+N = nchoosek(n,3)
+
+print('QA3 there are ',N,' unique genome combinations in the 3-step neutral network')
+
+
+#QA4 How many genomes are 1 mutation away from N?
+
+N2 = nchoosek(n,4)
+
+print('QA4 there are ',N2,' unique genome combinations 1 mutation away from ',N)
+
+#QA5 How many of N2 are synonymous and non-synonymous (statistical estimate)?
+
+syn = N2*aminos_to_basepairs
+non = N2*(1-aminos_to_basepairs)
+
+print('QA5 ',syn,' are synonymous ( ',aminos_to_basepairs*100,' percent )',non,' are non-synonymous ( ',(1-aminos_to_basepairs)*100,' percent')
+
+#QA6 How fast do synonymous and non-synonymous mutations accumulate in an n-step neutral network?
+print('QA6')
+total = 0
+for k in range(0,4):
+  total += nchoosek(n,k)
+  
+  print('there are ',total,' genomes after ',k,'-steps')
+  
+  syn = total*aminos_to_basepairs
+  non = total*(1-aminos_to_basepairs)
+  
+  print(syn,' (~1/3) are synonymous, ',non,' are non-synonymous (~2/3)')
+  
+  
+  
+#QA7 Explain what exploration of NN's edges means for viral evolution
+
+"""
+A neutral network allows a virus to explore the variant space. 
+
+Exploration at the edges of neutral networks refers to the process whereby evolution explores new genetic variations that are only slightly different from existing variations. These new variations are found in the vicinity of existing ones on the so-called neutral networks.
+
+Neutral networks are sets of genetic sequences that exhibit the same function or phenotype, despite having different sequences. Genetic variations that are found within these networks are considered to be neutral because they do not significantly affect the organism's fitness.
+
+In the case of viral evolution, exploration at the edges of neutral networks allows for the emergence of new viral strains that are slightly different from existing ones, but still able to replicate and infect host cells. These new strains can then be subject to natural selection and may have a higher fitness than their predecessors.
+
+This dynamic process is particularly relevant for RNA viruses, which have high mutation rates and can rapidly evolve to evade host immune responses or to adapt to new hosts. 
+"""
+  
+#QB1-7 Find how many genomes are antigenically neutral 
+
+# 3138
+rbd = 600 # full length of recepter binding domain 
+
+print('QB1-7 the spike protein receptor binding domain has ',rbd,' basepairs\n')
+
+# B-1
+M = nchoosek(rbd,1)*pow(3,1)
+print('QB-1 there are ',M,' combinations in the recepter binding domain after 1 mutatation')
+
+# B-2
+escape_sites = 5 # 346, 444, 484, 486, 490
+a = escape_sites/rbd
+
+non = M*a
+syn = M*(1-a)
+
+print('QB-2 there are ',syn,' synonymous and ',non,' non synonymous antigenic combinations in the recepter binding domain after 1 mutatation')
+
+  
+#QB3 How many genomes are in a 3-step neutral network?
+
+M = nchoosek(rbd,0)+nchoosek(rbd,1)+nchoosek(rbd,2)+nchoosek(rbd,3)
+
+print('QB3 there are ',M,' unique combinations in the 3-step neutral network')
+
+
+
+
+#QB4 How many genomes are 1 mutation away from M?
+
+M2 = nchoosek(rbd,4)
+
+print('QB4 there are ',M2,' unique genome combinations 1 mutation away from ',M)
+
+#QB5 How many of M2 are synonymous and non-synonymous (statistical estimate)?
+
+num_aminos = 20
+num_basepairs = pow(4,3) # 4^3 = 64 total AGCT permutations
+
+
+ratio = (num_aminos/num_basepairs)
+syn = M2*ratio
+non = M2*(1-ratio)
+
+print('QB-5 ',syn,' are synonymous ( ',ratio*100,' percent )',non,' are non-synonymous ( ',(1-ratio)*100,' percent')
+
+#QB6 How fast do synonymous and non-synonymous mutations accumulate in an n-step neutral network?
+print('QB-6')
+ratio = (num_aminos/num_basepairs)
+total = 0
+for k in range(0,4):
+  total += nchoosek(n,k)
+  
+  print('there are ',total,' genomes after ',k,'-steps')
+  
+  syn = total*ratio
+  non = total*(1-ratio)
+  
+  print(syn,' are synonymous ( ',ratio*100,' percent )',non,' are non-synonymous ( ',(1-ratio)*100,' percent )')
+
+
+
+
+  
+
