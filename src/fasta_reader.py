@@ -24,10 +24,10 @@ def read_wuhan_1(filepath):
     hu1_full_genome = get_genome_string(filepath).upper()
 
     # spike protein gene is 21563..25384
-    # RBD may be 22517-23185 start point is 1 less b/c of 0 index, end is same
-    # b/c it is not included
-    hu1_rbd = hu1_full_genome[22516:23185]
-
+    # the rbd is ARG319-PHE541 which corresponds to 223 AAs and 669 nucleotides
+    # the range [22837:23516] was arrived at experimentally
+    # comparing the RBD protein to the translation of the genome
+    hu1_rbd = hu1_full_genome[22837:23516]
     return hu1_full_genome, hu1_rbd
 
 
