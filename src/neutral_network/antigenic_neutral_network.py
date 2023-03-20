@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 
 class AntigenicNeutralNetwork:
 
-    def __init__(self, size, tolerance):
+    def __init__(self, size, tolerance, has_epistatic_change=False):
         self.size = size
         self.tolerance = tolerance
         print("Initializing binding calculator...", end="")
@@ -20,14 +20,18 @@ class AntigenicNeutralNetwork:
 
         self.nodes = {}  # Holds the node data
 
+        # Whether epistatic change should be considered while building the neutral network
+        self.has_epistatic_change = has_epistatic_change
+
         # This is the neutral network, which is a directed graph
         self.nn = nx.DiGraph()
 
-    def build(self):
+    def build(self, to_print):
         """
         Builds the neutral network self.nn to have self.size nodes
         If a mutation has a binding ability above self.tolerance it is considered neutral
 
+        :param to_print: True/False, whether node coordinates should be generated for printing
         :return:
         """
 
@@ -42,7 +46,7 @@ class AntigenicNeutralNetwork:
             # Randomly choose a node that is neutral
             index = random.sample(list(self.nn.nodes()), 1)[0]
             rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
-            print(f"Mutating node {rand_node.id} to make new node {current_size}")
+            # print(f"Mutating node {rand_node.id} to make new node {current_size}")
             while not rand_node.is_neutral:
                 rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
 
@@ -149,9 +153,9 @@ class Node:
     A node in the neutral network
     """
 
-    def __init__(self, node_id, xy_pos, bd, tolerance, mutations):
+    def __init__(self, node_id, xy_pos, bd, tolerance, mutations, to_print=False):
         """
-        :param: xy_pos: tuple(xy coords of parent, rotation)
+        :param xy_pos: tuple(xy coords of parent, rotation)
         :param mutations: a list of mutations performed on the mode.
             Sites must be between 331 and 531.
         """
@@ -160,9 +164,16 @@ class Node:
         self.child_mutations = []  # Used to ensure no mutations is made twice
         self.tolerance = tolerance
         self.escape = self.get_escape_remaining(bd)
+        self.xy_pos = (0, 0)
+
+        # Calculate if the node is neutral
         self.is_neutral = True if self.escape > tolerance else False
 
-        # Set the xy position of the node depending on whether it is neutral
+        # If the network is to be printed, set the xy position of the node depending on whether it is neutral
+        if to_print:
+            self.generate_coords(xy_pos, mutations)
+
+    def generate_coords(self, xy_pos, mutations):
         if len(mutations):
             neutral_radius = 25
             mut_radius = 5
@@ -215,3 +226,24 @@ class Node:
         string = f"NODE:\nmutations: {len(self.mutations)}\n"
         string += f"escape: {self.escape}\nneutral: {self.is_neutral}"
         return string
+
+
+def calc_2C(empty_ann, y):
+    """
+    Calculates the chances of antibody escape from genomes with epistatic interactions,
+    according to the following logic:
+
+    There is a 0.001% chance that a non-neutral mutation will be considered neutral because
+    it is "epistatic and allows for mutations in antigenically active sites to persist".
+    For y of these genomes, we run "x" more mutations on it and calculate how many of
+    these x mutations are not neutral (i.e. they escape antibodies better than the parent)
+    with respect to the parent genome.
+    :param: empty_ann: an AntigenicNeutralNetwork object to be used to calculate this question
+    :param: y: The number of non-neutral mutations to be considered neutral, each to be mutated x times
+
+    :return: The probability of antibody escape from genomes with epistatic interations
+    """
+    # Build an antigenic neutral network with at least Y non-neutral genomes,
+    # which we will then consider epistatic.
+    f = empty_ann
+    h = y
