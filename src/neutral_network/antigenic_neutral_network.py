@@ -1,7 +1,9 @@
 """
 Python code for building an antigenic neutral network
 """
+import copy
 import random
+import numpy as np
 from math import cos, sin, pi, dist
 import networkx as nx
 from bindingcalculator import *
@@ -26,7 +28,7 @@ class AntigenicNeutralNetwork:
         # This is the neutral network, which is a directed graph
         self.nn = nx.DiGraph()
 
-    def build(self, to_print):
+    def build(self, to_print=False):
         """
         Builds the neutral network self.nn to have self.size nodes
         If a mutation has a binding ability above self.tolerance it is considered neutral
@@ -36,7 +38,7 @@ class AntigenicNeutralNetwork:
         """
 
         # Create the root node of the neutral network where there are no mutations
-        node = Node(node_id=0, xy_pos=(0, 0, 0), bd=self.bd, tolerance=self.tolerance, mutations=[])
+        node = Node(node_id=0, xy_pos=(0, 0, 0), bd=self.bd, tolerance=self.tolerance, mutations=[], to_print=to_print)
         self.nodes[0] = node
         self.nn.add_node(node.id, pos=(node.xy_pos[0], node.xy_pos[1]))
         current_size = 1
@@ -63,6 +65,14 @@ class AntigenicNeutralNetwork:
             current_size += 1
 
         print(f"Number of neutral nodes: {neutral_nodes}\nTotal nodes: {self.size}")
+
+    def save_titer_table(self, path):
+        """
+        This function computes the distances table for the neutral network and then converts it to a titer table.
+        This conversion is necessary because
+        :param path: path to save the table as a csv file
+        :return:
+        """
 
     def create_figure(self):
         """
@@ -164,18 +174,19 @@ class Node:
         self.child_mutations = []  # Used to ensure no mutations is made twice
         self.tolerance = tolerance
         self.escape = self.get_escape_remaining(bd)
-        self.xy_pos = (0, 0)
+        self.xy_pos = (0, 0, 0)
+        self.to_print = to_print
 
         # Calculate if the node is neutral
         self.is_neutral = True if self.escape > tolerance else False
 
         # If the network is to be printed, set the xy position of the node depending on whether it is neutral
-        if to_print:
+        if self.to_print:
             self.generate_coords(xy_pos, mutations)
 
     def generate_coords(self, xy_pos, mutations):
         if len(mutations):
-            neutral_radius = 25
+            neutral_radius = random.randint(15, 25)
             mut_radius = 5
 
             if self.is_neutral:
@@ -203,7 +214,7 @@ class Node:
         Adds a random mutation to the self node and returns a new node
         :return: a child node
         """
-        mutations = self.mutations
+        mutations = copy.deepcopy(self.mutations)
 
         # Do not mutate the same site twice
         site = random.choice(sites)
@@ -212,19 +223,20 @@ class Node:
         mutations.append(site)
         self.child_mutations.append(site)
 
-        # Set the position for the child node
-        rotation_inc = 0.1
-        x, y, z = self.xy_pos
-        z += rotation_inc
-        self.xy_pos = (x, y, z)
+        # Set the position for the child node if printing
+        if self.to_print:
+            rotation_inc = random.random() - 0.5
+            x, y, z = self.xy_pos
+            z += rotation_inc
+            self.xy_pos = (x, y, z)
         child_node = Node(bd=bd, xy_pos=self.xy_pos, node_id=child_node_id, tolerance=self.tolerance,
-                          mutations=mutations)
+                          mutations=mutations, to_print=self.to_print)
 
         return child_node
 
     def __repr__(self):
-        string = f"NODE:\nmutations: {len(self.mutations)}\n"
-        string += f"escape: {self.escape}\nneutral: {self.is_neutral}"
+        string = f"NODE {self.id}:\n    mutations: {len(self.mutations)}\n"
+        string += f"    escape: {self.escape}\n    neutral: {self.is_neutral}\n"
         return string
 
 
