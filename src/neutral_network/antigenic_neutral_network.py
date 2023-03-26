@@ -68,6 +68,8 @@ class AntigenicNeutralNetwork:
 
     def save_titer_table(self, path):
         """
+        Tested with tableDistances(map, optimization_number = 1)
+
         This function computes the distances table for the neutral network and then converts it to a titer table.
         This conversion is necessary because
         :param path: path to save the table as a csv file
