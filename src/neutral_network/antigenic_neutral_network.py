@@ -4,7 +4,8 @@ Python code for building an antigenic neutral network
 import copy
 import random
 import numpy as np
-from math import cos, sin, pi, dist
+import pandas as pd
+from math import cos, sin, pi
 import networkx as nx
 from bindingcalculator import *
 import plotly.graph_objects as go
@@ -25,14 +26,22 @@ class AntigenicNeutralNetwork:
         # Whether epistatic change should be considered while building the neutral network
         self.has_epistatic_change = has_epistatic_change
 
+        # The distance table for this neutral network
+        self.distance_table = None  # Type: numpy array
+
+        # The titer table for this neutral network
+        self.titer_table = None  # Type: numpy array
+
         # This is the neutral network, which is a directed graph
         self.nn = nx.DiGraph()
 
-    def build(self, to_print=False):
+    def build(self, to_print=False, only_mutate_neutral=True):
         """
         Builds the neutral network self.nn to have self.size nodes
         If a mutation has a binding ability above self.tolerance it is considered neutral
 
+        :param only_mutate_neutral: Only mutate neutral nodes. Set as false to make a
+            more interesting antigenic map
         :param to_print: True/False, whether node coordinates should be generated for printing
         :return:
         """
@@ -46,10 +55,9 @@ class AntigenicNeutralNetwork:
         while current_size < self.size:
 
             # Randomly choose a node that is neutral
-            index = random.sample(list(self.nn.nodes()), 1)[0]
             rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
             # print(f"Mutating node {rand_node.id} to make new node {current_size}")
-            while not rand_node.is_neutral:
+            while not rand_node.is_neutral and only_mutate_neutral:
                 rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
 
             # Create a child node
@@ -66,15 +74,55 @@ class AntigenicNeutralNetwork:
 
         print(f"Number of neutral nodes: {neutral_nodes}\nTotal nodes: {self.size}")
 
-    def save_titer_table(self, path):
+    def make_titer_and_distance_tables(self):
         """
         Tested with tableDistances(map, optimization_number = 1)
 
-        This function computes the distances table for the neutral network and then converts it to a titer table.
-        This conversion is necessary because
-        :param path: path to save the table as a csv file
-        :return:
+        This function computes the distances table for the neutral network and then converts it to a "fake"
+        titer table because the titer table cannot be calculated directly
+        The formula used is:
+        distance_(i, j) = escape_i / escape_j
+        titer_(i, j) = 10 * 2^(distance_(i, j))
+        This formula was derived from the titer table to log titer table formula at
+        https://acorg.github.io/Racmacs/articles/intro-to-antigenic-cartography.html
+        but without including a column base.
+
+        This conversion is necessary because the Racmacs program to generate a antigenic map only takes
+        titer tables as input
+
+        :return: populates self.distance_table and self.titer_table
         """
+        # Check if a neutral network has been built
+        node_ids = self.nodes.keys()
+        if not len(node_ids):
+            return
+
+        # Make the distance table
+        self.distance_table = np.ndarray(shape=(self.size, self.size))
+        for i in range(self.size):
+            for j in range(self.size):
+                value = round(abs(1 - self.nodes[i].escape / self.nodes[j].escape), 2)
+
+                # Avoid divide-by-zero errors
+                if value < 0.09:
+                    self.distance_table[i, j] = 0.09
+                else:
+                    self.distance_table[i, j] = value
+
+        # Make the titer table
+        column_base = 10
+        self.titer_table = np.ndarray(shape=(self.size, self.size))
+        for i in range(self.size):
+            for j in range(self.size):
+                self.titer_table[i, j] = round(pow(2, column_base - self.distance_table[i, j]), 0)
+
+    def save_titer_table(self, path):
+        # Convert titer table to a pandas dataframe and get it in the format Racmacs wants
+        headers = range(self.size)
+        titer_df = pd.DataFrame(self.titer_table, columns=headers, index=headers)
+
+        titer_df.to_csv(path)
+        print(f"Saved titer.csv to {path}")
 
     def create_figure(self):
         """
@@ -137,7 +185,7 @@ class AntigenicNeutralNetwork:
         for node, adjacencies in enumerate(G.adjacency()):
             val = 1 if self.nodes[node].is_neutral else 0
             node_neutral.append(val)
-            node_text.append(f'neutral: {self.nodes[node].is_neutral}')
+            node_text.append(f'id: {self.nodes[node].id} neutral: {self.nodes[node].is_neutral}')
 
         node_trace.marker.color = node_neutral
         node_trace.text = node_text
