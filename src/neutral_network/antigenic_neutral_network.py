@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 
 class AntigenicNeutralNetwork:
 
-    def __init__(self, size, tolerance, has_epistatic_change=False):
+    def __init__(self, size, tolerance):
         self.size = size
         self.tolerance = tolerance
         print("Initializing binding calculator...", end="")
@@ -22,9 +22,6 @@ class AntigenicNeutralNetwork:
         self.sites = list(self.bd.sites)  # Used to track the sites we can mutate
 
         self.nodes = {}  # Holds the node data
-
-        # Whether epistatic change should be considered while building the neutral network
-        self.has_epistatic_change = has_epistatic_change
 
         # The distance table for this neutral network
         self.distance_table = None  # Type: numpy array
@@ -35,11 +32,12 @@ class AntigenicNeutralNetwork:
         # This is the neutral network, which is a directed graph
         self.nn = nx.DiGraph()
 
-    def build(self, to_print=False, only_mutate_neutral=True):
+    def build(self, to_print=False, only_mutate_neutral=True, consider_epistatic=False):
         """
         Builds the neutral network self.nn to have self.size nodes
         If a mutation has a binding ability above self.tolerance it is considered neutral
 
+        :param consider_epistatic: whether to consider epistatic change
         :param only_mutate_neutral: Only mutate neutral nodes. Set as false to make a
             more interesting antigenic map
         :param to_print: True/False, whether node coordinates should be generated for printing
@@ -50,29 +48,47 @@ class AntigenicNeutralNetwork:
         node = Node(node_id=0, xy_pos=(0, 0, 0), bd=self.bd, tolerance=self.tolerance, mutations=[], to_print=to_print)
         self.nodes[0] = node
         self.nn.add_node(node.id, pos=(node.xy_pos[0], node.xy_pos[1]))
+
+        # Set counters
         current_size = 1
         neutral_nodes = 1
+        epistatic_nodes = 1 if node.is_epistatic else 0
+        ne_nodes = 1 if node.is_epistatic else 0  # Neutral and epistatic nodes
+        e_not_n_nodes = 0  # Epistatic and non-neutral (if it was not epistatic) nodes
+
         while current_size < self.size:
 
             # Randomly choose a node that is neutral
             rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
             # print(f"Mutating node {rand_node.id} to make new node {current_size}")
-            while not rand_node.is_neutral and only_mutate_neutral:
-                rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
-
+            if not consider_epistatic:
+                while not rand_node.is_neutral and only_mutate_neutral:
+                    rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
+            else:
+                while (not rand_node.is_neutral and not rand_node.is_epistatic) and only_mutate_neutral:
+                    rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
             # Create a child node
             child = rand_node.mutate(child_node_id=current_size, bd=self.bd, sites=self.sites)
             if child.is_neutral:
                 neutral_nodes += 1
+            if child.is_epistatic:
+                epistatic_nodes += 1
+            if child.is_neutral and child.is_epistatic:
+                ne_nodes += 1
+            if not child.is_neutral and child.is_epistatic:
+                e_not_n_nodes += 1
+
             self.nodes[current_size] = child
 
             # Add the child to the network
-            self.nn.add_node(child.id, pos=(child.xy_pos[0], child.xy_pos[1]))
-            self.nn.add_edge(rand_node.id, child.id)
+            if to_print:
+                self.nn.add_node(child.id, pos=(child.xy_pos[0], child.xy_pos[1]))
+                self.nn.add_edge(rand_node.id, child.id)
 
             current_size += 1
 
-        print(f"Number of neutral nodes: {neutral_nodes}\nTotal nodes: {self.size}")
+        print(f"Total nodes: {self.size}\nNeutral nodes: {neutral_nodes}\nEpistatic nodes: {epistatic_nodes}")
+        print(f"Neutral epistatic nodes: {ne_nodes}\nNon-neutral epistatic nodes: {e_not_n_nodes}")
 
     def make_titer_and_distance_tables(self):
         """
@@ -229,6 +245,9 @@ class Node:
 
         # Calculate if the node is neutral
         self.is_neutral = True if self.escape > tolerance else False
+
+        # Determine if the node is epistatic with 0.0001 probability
+        self.is_epistatic = True if random.random() <= 0.0001 else False
 
         # If the network is to be printed, set the xy position of the node depending on whether it is neutral
         if self.to_print:
