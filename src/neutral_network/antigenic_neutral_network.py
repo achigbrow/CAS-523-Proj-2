@@ -22,6 +22,7 @@ class AntigenicNeutralNetwork:
         self.sites = list(self.bd.sites)  # Used to track the sites we can mutate
 
         self.nodes = {}  # Holds the node data
+        self.neutral_nodes = 0
 
         # The distance table for this neutral network
         self.distance_table = None  # Type: numpy array
@@ -32,12 +33,12 @@ class AntigenicNeutralNetwork:
         # This is the neutral network, which is a directed graph
         self.nn = nx.DiGraph()
 
-    def build(self, to_print=False, only_mutate_neutral=True, consider_epistatic=False):
+    def build(self, to_print=False, only_mutate_neutral=True, epistatic=False):
         """
         Builds the neutral network self.nn to have self.size nodes
         If a mutation has a binding ability above self.tolerance it is considered neutral
 
-        :param consider_epistatic: whether to consider epistatic change
+        :param epistatic: If the effects of epistatic nodes should be considered.
         :param only_mutate_neutral: Only mutate neutral nodes. Set as false to make a
             more interesting antigenic map
         :param to_print: True/False, whether node coordinates should be generated for printing
@@ -45,38 +46,31 @@ class AntigenicNeutralNetwork:
         """
 
         # Create the root node of the neutral network where there are no mutations
-        node = Node(node_id=0, xy_pos=(0, 0, 0), bd=self.bd, tolerance=self.tolerance, mutations=[], to_print=to_print)
+        node = Node(node_id=0,
+                    xy_pos=(0, 0, 0),
+                    bd=self.bd,
+                    tolerance=self.tolerance,
+                    mutations=[],
+                    to_print=to_print,
+                    epistatic=epistatic)
         self.nodes[0] = node
         self.nn.add_node(node.id, pos=(node.xy_pos[0], node.xy_pos[1]))
 
         # Set counters
         current_size = 1
-        neutral_nodes = 1
-        epistatic_nodes = 1 if node.is_epistatic else 0
-        ne_nodes = 1 if node.is_epistatic else 0  # Neutral and epistatic nodes
-        e_not_n_nodes = 0  # Epistatic and non-neutral (if it was not epistatic) nodes
 
         while current_size < self.size:
 
             # Randomly choose a node that is neutral
             rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
             # print(f"Mutating node {rand_node.id} to make new node {current_size}")
-            if not consider_epistatic:
-                while not rand_node.is_neutral and only_mutate_neutral:
-                    rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
-            else:
-                while (not rand_node.is_neutral and not rand_node.is_epistatic) and only_mutate_neutral:
-                    rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
+            while not rand_node.is_neutral and only_mutate_neutral:
+                rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
+
             # Create a child node
             child = rand_node.mutate(child_node_id=current_size, bd=self.bd, sites=self.sites)
             if child.is_neutral:
-                neutral_nodes += 1
-            if child.is_epistatic:
-                epistatic_nodes += 1
-            if child.is_neutral and child.is_epistatic:
-                ne_nodes += 1
-            if not child.is_neutral and child.is_epistatic:
-                e_not_n_nodes += 1
+                self.neutral_nodes += 1
 
             self.nodes[current_size] = child
 
@@ -87,8 +81,48 @@ class AntigenicNeutralNetwork:
 
             current_size += 1
 
-        print(f"Total nodes: {self.size}\nNeutral nodes: {neutral_nodes}\nEpistatic nodes: {epistatic_nodes}")
-        print(f"Neutral epistatic nodes: {ne_nodes}\nNon-neutral epistatic nodes: {e_not_n_nodes}")
+        print(f"Total nodes: {self.size}\nNeutral nodes: {self.neutral_nodes}")
+
+    def get_epistatic_statistics(self, y, x):
+        """
+        Calculates the chances of antibody escape from genomes with epistatic interactions,
+        according to the following logic:
+
+        There is a 0.001% chance that a non-neutral mutation will be considered neutral because
+        it is "epistatic and allows for mutations in antigenically active sites to persist".
+        For y of these genomes, we run "x" more mutations on it and calculate how many of
+        these x mutations are not neutral (i.e. they escape antibodies better than the parent)
+        with respect to the parent genome.
+        :param: empty_ann: an AntigenicNeutralNetwork object to be used to calculate this question
+        :param: y, x: The number of non-neutral mutations to be considered neutral, y, (i.e., epistatic),
+            each to be mutated x times
+
+        :return: The probability of antibody escape from genomes with epistatic interations
+        """
+        # Adjust size for these calculations
+        size_tmp = self.size
+        self.size = x
+
+        # Lists of neutral_nodes numbers
+        results_epistatic = []
+        results_normal = []
+        for i in range(y):
+            self.build(epistatic=True)
+            results_epistatic.append(self.neutral_nodes)
+            self.build(epistatic=False)
+            results_normal.append(self.neutral_nodes)
+
+        # Restore original size value
+        self.size = size_tmp
+
+        # Calculate the neutral-to-total-size ratios
+        results_epistatic /= x
+        results_normal /= x
+
+        avg_epi = sum(results_epistatic) / len(results_epistatic)
+
+
+
 
     def make_titer_and_distance_tables(self):
         """
@@ -229,7 +263,7 @@ class Node:
     A node in the neutral network
     """
 
-    def __init__(self, node_id, xy_pos, bd, tolerance, mutations, to_print=False):
+    def __init__(self, node_id, xy_pos, bd, tolerance, mutations, parent_escape_adjustment=0, to_print=False, epistatic=False):
         """
         :param xy_pos: tuple(xy coords of parent, rotation)
         :param mutations: a list of mutations performed on the mode.
@@ -239,15 +273,25 @@ class Node:
         self.mutations = mutations
         self.child_mutations = []  # Used to ensure no mutations is made twice
         self.tolerance = tolerance
-        self.escape = self.get_escape_remaining(bd)
+
+        # For considering epistatic nodes
+        escape = self.get_escape_remaining(bd)
+        if not epistatic:
+            self.escape = escape
+        # Epistatic nodes have their escape adjusted back to 1 after mutation.
+        # Used for the get_epistatic_statistics function
+        if parent_escape_adjustment:
+            self.escape_adjustment = parent_escape_adjustment
+            self.escape = escape + parent_escape_adjustment
+        else:
+            self.escape_adjustment = 1 - escape
+            self.escape = 1
+
         self.xy_pos = (0, 0, 0)
         self.to_print = to_print
 
         # Calculate if the node is neutral
         self.is_neutral = True if self.escape > tolerance else False
-
-        # Determine if the node is epistatic with 0.0001 probability
-        self.is_epistatic = True if random.random() <= 0.0001 else False
 
         # If the network is to be printed, set the xy position of the node depending on whether it is neutral
         if self.to_print:
@@ -309,22 +353,4 @@ class Node:
         return string
 
 
-def calc_2C(empty_ann, y):
-    """
-    Calculates the chances of antibody escape from genomes with epistatic interactions,
-    according to the following logic:
 
-    There is a 0.001% chance that a non-neutral mutation will be considered neutral because
-    it is "epistatic and allows for mutations in antigenically active sites to persist".
-    For y of these genomes, we run "x" more mutations on it and calculate how many of
-    these x mutations are not neutral (i.e. they escape antibodies better than the parent)
-    with respect to the parent genome.
-    :param: empty_ann: an AntigenicNeutralNetwork object to be used to calculate this question
-    :param: y: The number of non-neutral mutations to be considered neutral, each to be mutated x times
-
-    :return: The probability of antibody escape from genomes with epistatic interations
-    """
-    # Build an antigenic neutral network with at least Y non-neutral genomes,
-    # which we will then consider epistatic.
-    f = empty_ann
-    h = y

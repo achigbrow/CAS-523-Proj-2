@@ -7,7 +7,7 @@ from antigenic_neutral_network import AntigenicNeutralNetwork
 def main():
     # Neutral network params
     tolerance = 0.95
-    size = 100000
+    size = 1000
     print_network = False
     only_mutate_neutral = True
     consider_epistatic_change = True
