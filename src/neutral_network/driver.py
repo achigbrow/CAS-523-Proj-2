@@ -11,15 +11,17 @@ def main():
     size = 10
     print_network = False
     only_mutate_neutral = True
-    consider_epistatic_change = True
+    save_titer_table = False
 
     # Params for epistatic calcs
+    consider_epistatic_change = True  # If set to False, the following values will not be used.
     num_epistatic_mutations = 10
     times_to_mutate = 300
     parent_escape = 0.6
 
-    save_titer_table = False
-
+    #################################################
+    # Nothing needs to be edited below this comment #
+    #################################################
     # Init the antigenically neutral network
     print("Initializing binding calculator...", end="")
     bc = BindingCalculator()
