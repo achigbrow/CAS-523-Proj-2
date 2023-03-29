@@ -9,6 +9,7 @@ from math import cos, sin, pi
 import networkx as nx
 from bindingcalculator import *
 import plotly.graph_objects as go
+import plotly
 
 
 class AntigenicNeutralNetwork:
@@ -152,6 +153,8 @@ class AntigenicNeutralNetwork:
 
     def create_figure(self):
         """
+        Figure saved to data/neutralnetwork_{value of self.size}.html
+
         Code copied from: https://plotly.com/python/network-graphs/
         :return:
         """
@@ -232,6 +235,8 @@ class AntigenicNeutralNetwork:
                             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                         )
         fig.show()
+
+        plotly.offline.plot(fig, filename=f'data/neutralnetwork_{self.size}')
 
 
 def get_epistatic_statistics(y, x, tolerance, parent_escape, binding_calc):

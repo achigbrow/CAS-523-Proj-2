@@ -8,16 +8,18 @@ from src.neutral_network.bindingcalculator import BindingCalculator
 def main():
     # Neutral network params
     tolerance = 0.95
-    size = 10
-    print_network = False
+    size = 20
+    print_network = True
     only_mutate_neutral = True
     save_titer_table = False
 
     # Params for epistatic calcs
-    consider_epistatic_change = True  # If set to False, the following values will not be used.
-    num_epistatic_mutations = 10
+    # If consider_epistatic_change is True, only epistatic change will be considered and the above parameters will
+    # be ignored.
+    consider_epistatic_change = False  # If set to False, the following values will not be used.
+    starting_nodes = 10
     times_to_mutate = 300
-    parent_escape = 0.6
+    parent_escape = 0.6  # Between 0 and 1
 
     #################################################
     # Nothing needs to be edited below this comment #
@@ -29,11 +31,13 @@ def main():
     ann = AntigenicNeutralNetwork(size=size, tolerance=tolerance, binding_calculator=bc)
 
     if consider_epistatic_change:
-        get_epistatic_statistics(y=num_epistatic_mutations,
+        get_epistatic_statistics(y=starting_nodes,
                                  x=times_to_mutate,
                                  tolerance=tolerance,
                                  binding_calc=bc,
                                  parent_escape=parent_escape)
+        return
+
     else:
         ann.build(to_print=True, only_mutate_neutral=only_mutate_neutral)
 
