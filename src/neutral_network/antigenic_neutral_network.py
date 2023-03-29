@@ -79,7 +79,7 @@ class AntigenicNeutralNetwork:
             # print(f"Mutating node {rand_node.id} to make new node {current_size}")
             counter = 0
             while not rand_node.is_neutral and only_mutate_neutral:
-                print(rand_node)
+                # print(rand_node)
                 rand_node = self.nodes[random.sample(list(self.nn.nodes()), 1)[0]]
                 counter += 1
                 if counter == 25:
@@ -234,9 +234,9 @@ class AntigenicNeutralNetwork:
                             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                         )
-        fig.show()
+        # fig.show()
 
-        plotly.offline.plot(fig, filename=f'data/neutralnetwork_{self.size}')
+        plotly.offline.plot(fig, filename=f'data/neutralnetwork_{self.size}.html')
 
 
 def get_epistatic_statistics(y, x, tolerance, parent_escape, binding_calc):
@@ -255,7 +255,7 @@ def get_epistatic_statistics(y, x, tolerance, parent_escape, binding_calc):
     :param: y, x: The number of non-neutral mutations to be considered neutral, y, (i.e., epistatic),
         each to be mutated x times
 
-    :return: The probability of antibody escape from genomes with epistatic interations
+    :return: The probability of antibody escape from genomes with epistatic iterations
     """
     # Lists of neutral_nodes numbers
     results_epistatic = []
@@ -283,7 +283,7 @@ def get_epistatic_statistics(y, x, tolerance, parent_escape, binding_calc):
     print(f"If {y} epistatic genomes are each randomly mutated {x} more times\nthere will be {result * 100:0.2f}% more"
           f" antigenically-neutral genomes than\nif {y} neutral genomes are each mutated {x} more times")
 
-    return result
+    return parent_escape, tolerance, avg_epi, avg_norm, result
 
 
 class Node:

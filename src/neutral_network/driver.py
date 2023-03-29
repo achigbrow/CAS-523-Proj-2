@@ -8,10 +8,10 @@ from src.neutral_network.bindingcalculator import BindingCalculator
 def main():
     # Neutral network params
     tolerance = 0.95
-    size = 20
+    size = 200
     print_network = True
     only_mutate_neutral = True
-    save_titer_table = False
+    save_titer_table = True
 
     # Params for epistatic calcs
     # If consider_epistatic_change is True, only epistatic change will be considered and the above parameters will
