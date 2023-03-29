@@ -1,4 +1,7 @@
 .idea/
+local_data/
+data/
+src/neutral_network/local_tests.py
 # saved csvs are larger than 100 mb so can't add to git anyway
 *.csv
 
