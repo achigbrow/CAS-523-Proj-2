@@ -19,7 +19,7 @@ def main():
     consider_epistatic_change = False  # If set to False, the following values will not be used.
     starting_nodes = 10
     times_to_mutate = 300
-    parent_escape = 0.6  # Between 0 and 1
+    root_escape = 0.6  # Between 0 and 1
 
     #################################################
     # Nothing needs to be edited below this comment #
@@ -35,7 +35,7 @@ def main():
                                  x=times_to_mutate,
                                  tolerance=tolerance,
                                  binding_calc=bc,
-                                 parent_escape=parent_escape)
+                                 parent_escape=root_escape)
         return
 
     else:
