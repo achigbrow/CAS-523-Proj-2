@@ -10,7 +10,7 @@ def plot_aas():
            "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
     cols = ["Source", "Amino Acid", "Frequency"]
 
-    df = pd.DataFrame(columns=cols, index=range(0, 100))
+    df = pd.DataFrame(columns=cols, index=range(0, 80))
 
     # get RBD and spike strings
     rbd = get_s_substring(319, 541)
@@ -58,13 +58,11 @@ def plot_aas():
                         0.0744765, 0.0601965, 0.0119865, 0.0390565, 0.0678965]
 
     sources = ["Human-Host Viral Proteome", "Wuhan-Hu-1 Spike Protein",
-               "Wuhan-Hu-1 RBD", "Vertebrate-Host Viral Proteome",
-               "Omicron Spike Protein"]
-    all_freqs = [human_host_freqs, spike_freqs, rbd_freqs, vertebrate_freqs,
-                 os_freqs]
+               "Wuhan-Hu-1 RBD", "Vertebrate-Host Viral Proteome"]
+    all_freqs = [human_host_freqs, spike_freqs, rbd_freqs, vertebrate_freqs]
     counter = 0
 
-    for i in range(0, 100):
+    for i in range(0, 80):
         temp = [sources[int(i / 20)], aas[counter],
                 all_freqs[int(i / 20)][counter]]
 
@@ -77,7 +75,6 @@ def plot_aas():
     # plot data
     sns.set_theme(style="whitegrid")
 
-
     # g = sns.catplot(
     #     data=df, kind="bar",
     #     x="Amino Acid", y="Frequency", hue="Source",
@@ -88,33 +85,36 @@ def plot_aas():
     # g.legend.set_title("Frequency Source")
     # plt.show()
 
-    # no_spike = df[df["Source"] != "Wuhan-Hu-1 Spike Protein"]
-    #
-    # g1 = sns.catplot(
-    #     data=no_spike, kind="bar",
-    #     x="Amino Acid", y="Frequency", hue="Source",
-    #     errorbar="sd", palette="dark", alpha=.6, height=6
-    # )
-    # g1.despine(left=True)
-    # g1.set_axis_labels("", "Frequency")
-    # g1.legend.set_title("Frequency Source")
-    # plt.show()
-    #
+    no_spike = df[df["Source"] != "Wuhan-Hu-1 Spike Protein"]
+
+    g1 = sns.catplot(
+        data=no_spike, kind="bar",
+        x="Amino Acid", y="Frequency", hue="Source",
+        errorbar="sd", palette="dark", alpha=.6, height=6,
+    )
+    g1.despine(left=True)
+    # sns.move_legend(g1, "lower center", bbox_to_anchor=[.3, .3])
+    plt.show()
+
     no_rbd = df[df["Source"] != "Wuhan-Hu-1 RBD"]
 
-    g = sns.lineplot(data=no_rbd,
-                     x="Amino Acid", y="Frequency", hue="Source",
-                     style="Source"
-                     )
-    # g2 = sns.catplot(
-    #     data=no_rbd, kind="bar",
-    #     x="Amino Acid", y="Frequency", hue="Source",
-    #     errorbar="sd", palette="dark", alpha=.6, height=6
-    # )
-    # g2.despine(left=True)
-    # g2.set_axis_labels("", "Frequency")
-    # g2.legend.set_title("Frequency Source")
+    g2 = sns.catplot(
+        data=no_rbd, kind="bar",
+        x="Amino Acid", y="Frequency", hue="Source",
+        errorbar="sd", palette="dark", alpha=.6, height=6,
+    )
+    g2.despine(left=True)
+    # sns.move_legend(g2, "lower center", bbox_to_anchor=[.85, .85])
+    # g.legend(loc="lower left", bbox_to_anchor=(0, 1))
     plt.show()
+
+    g3 = sns.lineplot(data=no_rbd,
+                     x="Amino Acid", y="Frequency", hue="Source",
+                     style="Source")
+    g3.legend(bbox_to_anchor=[.85, .85], loc="lower center")
+    plt.show()
+
+
 
 def plot_probs():
 

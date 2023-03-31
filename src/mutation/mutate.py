@@ -163,7 +163,7 @@ def test_mutation(orig):
 if __name__ == "__main__":
     # orig = "TACCATGGAATTACTGCG"  # Phenotype: YHGITA
     # test_mutation(orig)
-    _, rbd = read_wuhan_1(r"D:\CS523\CAS-523-Proj-2\genomes\wuhan-hu-1.txt")
+    _, rbd = read_wuhan_1(r"/genomes/wuhan-hu-1.txt")
 
     # cleaning up RBD here
     # TODO: fix fasta_reader to remove whitespace/newlines
