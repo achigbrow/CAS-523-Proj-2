@@ -57,7 +57,10 @@ def get_s_substring(start, end):
     return s[start - 1 : end]
 
 if __name__ == "__main__":
-    rbd = get_s_substring(319, 541)
-    print(rbd)
+    # rbd = get_s_substring(319, 541)
+    # print(rbd)
     # spike = get_s_substring(1, 1275)
     # count_aas(spike)
+    part_rbd = get_s_substring(443, 451)
+    print("\n" in part_rbd)
+    print(part_rbd)

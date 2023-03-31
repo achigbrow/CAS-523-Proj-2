@@ -10,18 +10,42 @@ def plot_aas():
            "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
     cols = ["Source", "Amino Acid", "Frequency"]
 
-    df = pd.DataFrame(columns=cols, index=range(0, 80))
+    df = pd.DataFrame(columns=cols, index=range(0, 100))
 
     # get RBD and spike strings
     rbd = get_s_substring(319, 541)
     spike = get_s_substring(1, 1274)
+    omicron_spike = "MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFF" \
+                    "SNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLL" \
+                    "IVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLM" \
+                    "DLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINIT" \
+                    "RFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDP" \
+                    "LSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWN" \
+                    "RKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPG" \
+                    "QTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEI" \
+                    "YQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKST" \
+                    "NLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILDITPC" \
+                    "SFGGVSVITPGTNTSNQVAVLYQDVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGC" \
+                    "LIGAEHVNNSYECDIPIGAGICASYQTQTNSPRRARSVASQSIIAYTMSLGAENSVAYS" \
+                    "NNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRAL" \
+                    "TGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDPSKPSKRSFIEDLLFNKV" \
+                    "TLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTSALLAGTITSG" \
+                    "WTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASA" \
+                    "LGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLNDILSRLDKVEAEVQIDRLITGRLQS" \
+                    "LQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVF" \
+                    "LHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNTF" \
+                    "VSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQ" \
+                    "KEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTS" \
+                    "CCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT"
 
     # get RBD and spike amino acid frequencies
     _, rfreqs = count_aas(rbd)
     _, sfreqs = count_aas(spike)
+    _, osfreqs = count_aas(omicron_spike)
 
     rbd_freqs = list(rfreqs.values())
     spike_freqs = list(sfreqs.values())
+    os_freqs = list(osfreqs.values())
 
     # Hardcoded from paper referenced in README
     human_host_freqs = [0.05054, 0.04901, 0.05869, 0.05532, 0.02181, 0.03646,
@@ -34,11 +58,13 @@ def plot_aas():
                         0.0744765, 0.0601965, 0.0119865, 0.0390565, 0.0678965]
 
     sources = ["Human-Host Viral Proteome", "Wuhan-Hu-1 Spike Protein",
-               "Wuhan-Hu-1 RBD", "Vertebrate-Host Viral Proteome"]
-    all_freqs = [human_host_freqs, spike_freqs, rbd_freqs, vertebrate_freqs]
+               "Wuhan-Hu-1 RBD", "Vertebrate-Host Viral Proteome",
+               "Omicron Spike Protein"]
+    all_freqs = [human_host_freqs, spike_freqs, rbd_freqs, vertebrate_freqs,
+                 os_freqs]
     counter = 0
 
-    for i in range(0, 80):
+    for i in range(0, 100):
         temp = [sources[int(i / 20)], aas[counter],
                 all_freqs[int(i / 20)][counter]]
 
@@ -51,37 +77,43 @@ def plot_aas():
     # plot data
     sns.set_theme(style="whitegrid")
 
-    g = sns.catplot(
-        data=df, kind="bar",
-        x="Amino Acid", y="Frequency", hue="Source",
-        errorbar="sd", palette="dark", alpha=.6, height=6
-    )
-    g.despine(left=True)
-    g.set_axis_labels("", "Frequency")
-    g.legend.set_title("Frequency Source")
-    plt.show()
 
-    no_spike = df[df["Source"] != "Wuhan-Hu-1 Spike Protein"]
+    # g = sns.catplot(
+    #     data=df, kind="bar",
+    #     x="Amino Acid", y="Frequency", hue="Source",
+    #     errorbar="sd", palette="dark", alpha=.6, height=6
+    # )
+    # g.despine(left=True)
+    # g.set_axis_labels("", "Frequency")
+    # g.legend.set_title("Frequency Source")
+    # plt.show()
 
-    g1 = sns.catplot(
-        data=no_spike, kind="bar",
-        x="Amino Acid", y="Frequency", hue="Source",
-        errorbar="sd", palette="dark", alpha=.6, height=6
-    )
-    g1.despine(left=True)
-    g1.set_axis_labels("", "Frequency")
-    g1.legend.set_title("Frequency Source")
-    plt.show()
-
+    # no_spike = df[df["Source"] != "Wuhan-Hu-1 Spike Protein"]
+    #
+    # g1 = sns.catplot(
+    #     data=no_spike, kind="bar",
+    #     x="Amino Acid", y="Frequency", hue="Source",
+    #     errorbar="sd", palette="dark", alpha=.6, height=6
+    # )
+    # g1.despine(left=True)
+    # g1.set_axis_labels("", "Frequency")
+    # g1.legend.set_title("Frequency Source")
+    # plt.show()
+    #
     no_rbd = df[df["Source"] != "Wuhan-Hu-1 RBD"]
-    g2 = sns.catplot(
-        data=no_rbd, kind="bar",
-        x="Amino Acid", y="Frequency", hue="Source",
-        errorbar="sd", palette="dark", alpha=.6, height=6
-    )
-    g2.despine(left=True)
-    g2.set_axis_labels("", "Frequency")
-    g2.legend.set_title("Frequency Source")
+
+    g = sns.lineplot(data=no_rbd,
+                     x="Amino Acid", y="Frequency", hue="Source",
+                     style="Source"
+                     )
+    # g2 = sns.catplot(
+    #     data=no_rbd, kind="bar",
+    #     x="Amino Acid", y="Frequency", hue="Source",
+    #     errorbar="sd", palette="dark", alpha=.6, height=6
+    # )
+    # g2.despine(left=True)
+    # g2.set_axis_labels("", "Frequency")
+    # g2.legend.set_title("Frequency Source")
     plt.show()
 
 def plot_probs():
@@ -109,5 +141,5 @@ def plot_probs():
 
 
 if __name__ == "__main__":
-    plot_probs()
+    # plot_probs()
     plot_aas()

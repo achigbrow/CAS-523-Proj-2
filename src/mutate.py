@@ -173,5 +173,11 @@ if __name__ == "__main__":
           newrbd.append(rbd[i])
 
     rbd_final = ''.join(str(i) for i in newrbd)
+    print(rbd_final)
+    rbd_loop = rbd_final[372:399]
+    print(len(rbd_loop))
+    # print(len(rbd_loop))
+    print(rbd_loop)
 
-    test_mutation(rbd_final)
+
+    test_mutation(rbd_loop)
